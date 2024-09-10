@@ -1,0 +1,72 @@
+//Incluir librerias
+#include <Arduino.h>
+#include <LiquidCrystal.h>
+
+// Pines de los botones
+#define b_1 25 // Cambia el botón 1 al pin GPIO 25
+#define b_2 26 // Cambia el botón 2 al pin GPIO 26
+
+// Pines de los potenciómetros
+#define p_1 33 // Primer potenciómetro
+#define p_2 34 // Segundo potenciómetro
+
+LiquidCrystal lcd(15, 2, 18, 19, 23, 22);  // Inicializar la LCD
+
+int contador = 0; // Variable para el contador de 8 bits
+
+void setup() {
+  // Inicialización de la LCD
+  lcd.begin(16, 2);
+
+  // Configuración de los pines de los botones
+  pinMode(b_1, INPUT_PULLUP);  // Botón 1 con resistencia pull-up interna
+  pinMode(b_2, INPUT_PULLDOWN);  // Botón 2 con resistencia pull-down interna
+
+  // Configuración de los pines de los potenciómetros
+  pinMode(p_1, INPUT);
+  pinMode(p_2, INPUT);
+
+  // Mostrar títulos en la LCD
+  lcd.setCursor(0, 0);
+  lcd.print("Pot1: Pot2: CPU:");
+  delay(1000);
+}
+
+void loop() {
+  // Leer valores de los potenciómetros
+  int valP_1 = analogRead(p_1);
+  int valP_2 = analogRead(p_2);
+
+  // Convertir los valores a voltaje (suponiendo 3.3V como Vref)
+  float voltaje1 = valP_1 * (3.3 / 4095.0);
+  float voltaje2 = valP_2 * (3.3 / 4095.0);
+
+  // Mostrar los valores de los potenciómetros en la LCD
+  lcd.setCursor(0, 1);  // Posición del valor del potenciómetro 1
+  lcd.print(voltaje1, 2); // Mostrar con dos decimales
+  lcd.print("V  ");
+  
+  lcd.setCursor(6, 1);  // Posición del valor del potenciómetro 2
+  lcd.print(voltaje2, 2); // Mostrar con dos decimales
+  lcd.print("V  ");
+
+  // Control del contador con los botones
+  if (digitalRead(b_1) == LOW) {
+    contador++;
+    if (contador > 255) contador = 255;  // Limitar a 8 bits
+    delay(200);  // Delay para evitar rebotes
+  }
+
+  if (digitalRead(b_2) == HIGH) {
+    contador--;
+    if (contador < 0) contador = 0;  // Evitar valores negativos
+    delay(200);  // Delay para evitar rebotes
+  }
+
+  // Mostrar el contador en la LCD
+  lcd.setCursor(12, 1);  // Ubicación del valor del contador en la segunda fila
+  lcd.print(contador);
+  lcd.print("   ");  // Limpiar los caracteres sobrantes
+
+  delay(100);
+}
